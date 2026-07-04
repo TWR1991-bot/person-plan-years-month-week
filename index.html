@@ -7,21 +7,55 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ... (保留原本的主題 CSS) ... */
+        :root {
+            --bg-color: #f4f4f4;
+            --primary-color: #ff8c00; /* Fitness 活力橘 */
+            --secondary-color: #7f8c8d; /* 啞鈴灰 */
+        }
+        body.beach-theme {
+            --primary-color: #0077be; /* Beach 海洋藍 */
+            --secondary-color: #f4d03f; /* 沙灘黃 */
+        }
+        body { background-color: var(--bg-color); font-family: sans-serif; }
+        .active-tab { border-bottom: 3px solid var(--primary-color); font-weight: bold; }
     </style>
 </head>
-<body class="p-8">
-    <!-- 加入錯誤顯示容器 -->
-    <div id="error-log" class="bg-red-100 text-red-700 p-4 mb-4 hidden rounded"></div>
+<body class="p-4 md:p-8">
 
+    <div id="error-log" class="bg-red-100 text-red-700 p-4 mb-4 hidden rounded"></div>
+    
     <header class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">個人計畫系統</h1>
-        <div id="month-display" class="text-gray-600"></div>
+        <div id="month-display" class="text-gray-600 font-bold"></div>
     </header>
 
-    <main id="main-content">
-        <!-- 內容區域 -->
-        <div id="data-display" class="mt-4 text-gray-500">系統連接中...</div>
+    <nav class="flex gap-4 mb-6 border-b pb-2">
+        <button class="tab-btn active-tab" onclick="showTab('weekly')">週計畫</button>
+        <button class="tab-btn" onclick="showTab('task-control')">工作計畫掌控</button>
+        <button class="tab-btn" onclick="showTab('annual')">年度部門計劃總表</button>
+        <button class="tab-btn" onclick="showTab('tracking')">跨部門工作追蹤</button>
+        <button class="tab-btn" onclick="showTab('stats')">統計分析</button>
+    </nav>
+
+    <main id="content-area">
+        <div id="weekly" class="tab-content">週計畫內容載入中...</div>
+        <div id="task-control" class="tab-content hidden">工作計畫掌控內容</div>
+        <div id="annual" class="tab-content hidden">
+            <div class="flex gap-2 mb-4">
+                <button class="px-4 py-2 bg-gray-200" onclick="showAnnual('plans')">計畫總表</button>
+                <button class="px-4 py-2 bg-gray-200" onclick="showAnnual('reps')">職代表</button>
+            </div>
+            <div id="annual-inner"></div>
+        </div>
+        <div id="tracking" class="tab-content hidden overflow-x-auto">
+            <table class="w-full border-collapse border">
+                <thead><tr id="track-header"></tr></thead>
+                <tbody id="track-body"></tbody>
+            </table>
+        </div>
+        <div id="stats" class="tab-content hidden">
+            <canvas id="statsChart" class="max-w-md mx-auto"></canvas>
+        </div>
     </main>
 
     <script>
@@ -30,21 +64,36 @@
         async function fetchData(action) {
             const errDiv = document.getElementById('error-log');
             try {
-                const response = await fetch(`${API_URL}?action=${action}`);
+                // 使用 cors mode 與 get 方法
+                const response = await fetch(`${API_URL}?action=${action}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
                 if (!response.ok) throw new Error(`HTTP 狀態錯誤: ${response.status}`);
-                return await response.json();
+                const data = await response.json();
+                console.log(`Data for ${action}:`, data);
+                return data;
             } catch (e) {
                 console.error("Fetch error:", e);
                 errDiv.classList.remove('hidden');
-                errDiv.innerText = `無法載入資料 (${action}): ${e.message}。請確認 GAS 是否已發布且權限設為「所有人」。`;
+                errDiv.innerText = `無法載入資料 (${action}): ${e.message}。請確認 GAS 已部署且權限設為「所有人」。`;
                 return null;
             }
         }
 
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+        }
+
         async function init() {
-            const data = await fetchData('getTasks');
-            if (data) {
-                document.getElementById('data-display').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            const month = new Date().getMonth() + 1;
+            document.getElementById('month-display').innerText = `${month}月份`;
+            if (month % 2 === 0) document.body.classList.add('beach-theme');
+
+            const tasks = await fetchData('getTasks');
+            if (tasks) {
+                document.getElementById('weekly').innerHTML = `<pre>${JSON.stringify(tasks.slice(0, 5), null, 2)}</pre>`;
             }
         }
 
