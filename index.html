@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人計畫系統</title>
+    <style>
+        /* CSS 變數 - 雙主題切換 */
+        :root {
+            --bg-color: #f4f4f4;
+            --primary-color: #ff8c00; /* Fitness 活力橘 */
+            --secondary-color: #7f8c8d; /* 啞鈴灰 */
+            --text-color: #333;
+        }
+
+        body.beach-theme {
+            --primary-color: #0077be; /* Beach 海洋藍 */
+            --secondary-color: #f4d03f; /* 沙灘黃 */
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 導航區 */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .tab-bar { display: flex; gap: 10px; margin-top: 10px; }
+        .tab { padding: 10px 20px; background: #ddd; cursor: pointer; border-radius: 5px; }
+        
+        /* 表格區塊 */
+        .plan-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        .day-column { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* 假日遮罩 */
+        .holiday { 
+            background: repeating-linear-gradient(45deg, #eee, #eee 10px, #fff 10px, #fff 20px);
+            opacity: 0.6;
+        }
+
+        /* 任務區塊 */
+        .task-slot { border-bottom: 1px solid #ccc; padding: 5px 0; min-height: 40px; }
+        .emergency { color: red; font-weight: bold; }
+        .daily { color: green; }
+
+        /* 臨時任務區 */
+        .plugin-task { margin-top: 20px; border-top: 2px dashed var(--primary-color); padding: 10px; background: #fff5e6; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>我的計畫表</h1>
+    <div id="month-display"></div>
+</header>
+
+<div class="tab-bar" id="week-tabs"></div>
+
+<div class="plan-grid" id="plan-container">
+    <!-- 動態生成每日欄位 -->
+</div>
+
+<div class="plugin-task">
+    <h3>臨時插件任務</h3>
+    <div id="plugin-list"></div>
+</div>
+
+<script>
+    // 主題自動切換
+    function applyTheme() {
+        const month = new Date().getMonth() + 1;
+        if (month % 2 === 0) {
+            document.body.classList.add('beach-theme');
+        }
+    }
+
+    // 初始化頁面
+    function init() {
+        applyTheme();
+        // 這裡後續會對接 GAS 讀取資料
+        console.log("系統已啟動，準備對接 Google Sheets");
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
