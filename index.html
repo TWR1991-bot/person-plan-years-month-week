@@ -3,88 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人計畫系統</title>
+    <title>個人計畫系統管理介面</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* CSS 變數 - 雙主題切換 */
         :root {
             --bg-color: #f4f4f4;
-            --primary-color: #ff8c00; /* Fitness 活力橘 */
-            --secondary-color: #7f8c8d; /* 啞鈴灰 */
+            --primary-color: #ff8c00;
+            --secondary-color: #7f8c8d;
             --text-color: #333;
         }
-
         body.beach-theme {
-            --primary-color: #0077be; /* Beach 海洋藍 */
-            --secondary-color: #f4d03f; /* 沙灘黃 */
+            --primary-color: #0077be;
+            --secondary-color: #f4d03f;
         }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        /* 導航區 */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .tab-bar { display: flex; gap: 10px; margin-top: 10px; }
-        .tab { padding: 10px 20px; background: #ddd; cursor: pointer; border-radius: 5px; }
-        
-        /* 表格區塊 */
-        .plan-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-        .day-column { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        
-        /* 假日遮罩 */
-        .holiday { 
-            background: repeating-linear-gradient(45deg, #eee, #eee 10px, #fff 10px, #fff 20px);
-            opacity: 0.6;
-        }
-
-        /* 任務區塊 */
-        .task-slot { border-bottom: 1px solid #ccc; padding: 5px 0; min-height: 40px; }
-        .emergency { color: red; font-weight: bold; }
-        .daily { color: green; }
-
-        /* 臨時任務區 */
-        .plugin-task { margin-top: 20px; border-top: 2px dashed var(--primary-color); padding: 10px; background: #fff5e6; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .theme-primary { color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .sub-tab-content { display: none; }
+        .sub-tab-content.active { display: block; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-<header>
-    <h1>我的計畫表</h1>
-    <div id="month-display"></div>
-</header>
+    <header class="flex flex-col md:flex-row justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold theme-primary">個人計畫與管理系統</h1>
+            <p id="month-display" class="text-gray-600"></p>
+        </div>
+        <nav class="flex flex-wrap gap-2 mt-4 md:mt-0">
+            <button onclick="switchTab('weekly')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">週計畫</button>
+            <button onclick="switchTab('task-control')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">工作計畫掌控</button>
+            <button onclick="switchTab('annual')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">年度計畫</button>
+            <button onclick="switchTab('tracking')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">跨部門工作追蹤</button>
+            <button onclick="switchTab('docs')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">年度與職代表</button>
+            <button onclick="switchTab('stats')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">統計分析</button>
+        </nav>
+    </header>
 
-<div class="tab-bar" id="week-tabs"></div>
+    <main id="main-content">
+        <section id="weekly" class="tab-content active"><div class="grid grid-cols-7 gap-4" id="plan-container">載入中...</div></section>
+        <section id="task-control" class="tab-content">工作計畫掌控內容載入中...</section>
+        <section id="annual" class="tab-content">年度計畫內容...</section>
+        <section id="tracking" class="tab-content">跨部門工作追蹤內容載入中...</section>
 
-<div class="plan-grid" id="plan-container">
-    <!-- 動態生成每日欄位 -->
-</div>
+        <section id="docs" class="tab-content">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex gap-4 mb-6 border-b pb-4">
+                    <button onclick="switchSubTab('doc-plan')" class="font-bold theme-primary">年度部門計劃總表</button>
+                    <button onclick="switchSubTab('doc-rep')" class="font-bold theme-primary">職代表</button>
+                </div>
+                <div id="doc-plan" class="sub-tab-content active">年度部門計劃總表載入中...</div>
+                <div id="doc-rep" class="sub-tab-content">職代表列表載入中...</div>
+            </div>
+        </section>
 
-<div class="plugin-task">
-    <h3>臨時插件任務</h3>
-    <div id="plugin-list"></div>
-</div>
+        <section id="stats" class="tab-content">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-6">工作時數分析</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="h-64"><canvas id="hoursChart"></canvas></div>
+                    <div class="h-64"><canvas id="categoryChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-<script>
-    // 主題自動切換
-    function applyTheme() {
-        const month = new Date().getMonth() + 1;
-        if (month % 2 === 0) {
-            document.body.classList.add('beach-theme');
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyRvotFP-aHE7ei3jeQBwMYw4PEuyFBZg7hWcuCrdEqzLCBySiTwEW0k-TuT8KNsnKDfg/exec";
+
+        async function fetchData(action) {
+            try {
+                const response = await fetch(`${API_URL}?action=${action}`);
+                return await response.json();
+            } catch (e) {
+                console.error("Fetch error:", e);
+                return null;
+            }
         }
-    }
 
-    // 初始化頁面
-    function init() {
-        applyTheme();
-        // 這裡後續會對接 GAS 讀取資料
-        console.log("系統已啟動，準備對接 Google Sheets");
-    }
+        function applyTheme() {
+            const month = new Date().getMonth() + 1;
+            if (month % 2 === 0) document.body.classList.add('beach-theme');
+            document.getElementById('month-display').innerText = `${new Date().getFullYear()}年 ${month}月`;
+        }
 
-    window.onload = init;
-</script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(tabId === 'stats') renderCharts();
+            if(tabId === 'tracking') loadTracking();
+        }
+
+        function switchSubTab(subTabId) {
+            document.querySelectorAll('.sub-tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(subTabId).classList.add('active');
+        }
+
+        async function loadTracking() {
+            const data = await fetchData('getTracking');
+            const container = document.getElementById('tracking');
+            if(data) container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        function renderCharts() {
+            const ctxHours = document.getElementById('hoursChart').getContext('2d');
+            new Chart(ctxHours, {
+                type: 'bar',
+                data: {
+                    labels: ['設計', '管理', '部門協助', '其他'],
+                    datasets: [{ label: '預計工時', data: [25, 8, 2, 9], backgroundColor: '#ff8c00' },
+                               { label: '實際工時', data: [18, 5, 1, 8], backgroundColor: '#7f8c8d' }]
+                }
+            });
+
+            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+            new Chart(ctxCategory, {
+                type: 'doughnut',
+                data: {
+                    labels: ['設計', '管理', '部門協助', '其他'],
+                    datasets: [{ data: [45, 20, 10, 25], backgroundColor: ['#ff8c00', '#7f8c8d', '#ffbf00', '#ffdab9'] }]
+                }
+            });
+        }
+
+        window.onload = () => {
+            applyTheme();
+        };
+    </script>
 </body>
 </html>
