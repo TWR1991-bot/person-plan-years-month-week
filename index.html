@@ -3,134 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人計畫系統管理介面</title>
+    <title>個人計畫系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg-color: #f4f4f4;
-            --primary-color: #ff8c00;
-            --secondary-color: #7f8c8d;
-            --text-color: #333;
-        }
-        body.beach-theme {
-            --primary-color: #0077be;
-            --secondary-color: #f4d03f;
-        }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); }
-        .theme-primary { color: var(--primary-color); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .sub-tab-content { display: none; }
-        .sub-tab-content.active { display: block; }
+        /* ... (保留原本的主題 CSS) ... */
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-8">
+    <!-- 加入錯誤顯示容器 -->
+    <div id="error-log" class="bg-red-100 text-red-700 p-4 mb-4 hidden rounded"></div>
 
-    <header class="flex flex-col md:flex-row justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold theme-primary">個人計畫與管理系統</h1>
-            <p id="month-display" class="text-gray-600"></p>
-        </div>
-        <nav class="flex flex-wrap gap-2 mt-4 md:mt-0">
-            <button onclick="switchTab('weekly')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">週計畫</button>
-            <button onclick="switchTab('task-control')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">工作計畫掌控</button>
-            <button onclick="switchTab('annual')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">年度計畫</button>
-            <button onclick="switchTab('tracking')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">跨部門工作追蹤</button>
-            <button onclick="switchTab('docs')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">年度與職代表</button>
-            <button onclick="switchTab('stats')" class="px-4 py-2 bg-white rounded shadow hover:bg-gray-50">統計分析</button>
-        </nav>
+    <header class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">個人計畫系統</h1>
+        <div id="month-display" class="text-gray-600"></div>
     </header>
 
     <main id="main-content">
-        <section id="weekly" class="tab-content active"><div class="grid grid-cols-7 gap-4" id="plan-container">載入中...</div></section>
-        <section id="task-control" class="tab-content">工作計畫掌控內容載入中...</section>
-        <section id="annual" class="tab-content">年度計畫內容...</section>
-        <section id="tracking" class="tab-content">跨部門工作追蹤內容載入中...</section>
-
-        <section id="docs" class="tab-content">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex gap-4 mb-6 border-b pb-4">
-                    <button onclick="switchSubTab('doc-plan')" class="font-bold theme-primary">年度部門計劃總表</button>
-                    <button onclick="switchSubTab('doc-rep')" class="font-bold theme-primary">職代表</button>
-                </div>
-                <div id="doc-plan" class="sub-tab-content active">年度部門計劃總表載入中...</div>
-                <div id="doc-rep" class="sub-tab-content">職代表列表載入中...</div>
-            </div>
-        </section>
-
-        <section id="stats" class="tab-content">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-6">工作時數分析</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="h-64"><canvas id="hoursChart"></canvas></div>
-                    <div class="h-64"><canvas id="categoryChart"></canvas></div>
-                </div>
-            </div>
-        </section>
+        <!-- 內容區域 -->
+        <div id="data-display" class="mt-4 text-gray-500">系統連接中...</div>
     </main>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyRvotFP-aHE7ei3jeQBwMYw4PEuyFBZg7hWcuCrdEqzLCBySiTwEW0k-TuT8KNsnKDfg/exec";
 
         async function fetchData(action) {
+            const errDiv = document.getElementById('error-log');
             try {
                 const response = await fetch(`${API_URL}?action=${action}`);
+                if (!response.ok) throw new Error(`HTTP 狀態錯誤: ${response.status}`);
                 return await response.json();
             } catch (e) {
                 console.error("Fetch error:", e);
+                errDiv.classList.remove('hidden');
+                errDiv.innerText = `無法載入資料 (${action}): ${e.message}。請確認 GAS 是否已發布且權限設為「所有人」。`;
                 return null;
             }
         }
 
-        function applyTheme() {
-            const month = new Date().getMonth() + 1;
-            if (month % 2 === 0) document.body.classList.add('beach-theme');
-            document.getElementById('month-display').innerText = `${new Date().getFullYear()}年 ${month}月`;
+        async function init() {
+            const data = await fetchData('getTasks');
+            if (data) {
+                document.getElementById('data-display').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(tabId === 'stats') renderCharts();
-            if(tabId === 'tracking') loadTracking();
-        }
-
-        function switchSubTab(subTabId) {
-            document.querySelectorAll('.sub-tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(subTabId).classList.add('active');
-        }
-
-        async function loadTracking() {
-            const data = await fetchData('getTracking');
-            const container = document.getElementById('tracking');
-            if(data) container.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-        }
-
-        function renderCharts() {
-            const ctxHours = document.getElementById('hoursChart').getContext('2d');
-            new Chart(ctxHours, {
-                type: 'bar',
-                data: {
-                    labels: ['設計', '管理', '部門協助', '其他'],
-                    datasets: [{ label: '預計工時', data: [25, 8, 2, 9], backgroundColor: '#ff8c00' },
-                               { label: '實際工時', data: [18, 5, 1, 8], backgroundColor: '#7f8c8d' }]
-                }
-            });
-
-            const ctxCategory = document.getElementById('categoryChart').getContext('2d');
-            new Chart(ctxCategory, {
-                type: 'doughnut',
-                data: {
-                    labels: ['設計', '管理', '部門協助', '其他'],
-                    datasets: [{ data: [45, 20, 10, 25], backgroundColor: ['#ff8c00', '#7f8c8d', '#ffbf00', '#ffdab9'] }]
-                }
-            });
-        }
-
-        window.onload = () => {
-            applyTheme();
-        };
+        window.onload = init;
     </script>
 </body>
 </html>
