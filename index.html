@@ -368,6 +368,93 @@
     border-color: var(--text-primary);
   }
 
+  /* ===================== 年度切換 / 週導覽 ===================== */
+
+  .year-switcher, .week-nav-arrows {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-arrow {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+    white-space: nowrap;
+  }
+  .nav-arrow:hover { background: var(--surface-alt); }
+
+  .year-label {
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 56px;
+    text-align: center;
+  }
+
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .week-range-label {
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 190px;
+    text-align: center;
+  }
+
+  .week-jump {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .week-jump select {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 13px;
+    background: var(--surface);
+    color: var(--text-primary);
+  }
+
+  /* 週計畫表格內的每日記錄格子 */
+  .day-cell {
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background .15s ease;
+    padding: 8px 6px !important;
+  }
+  .day-cell:hover { background: var(--surface-alt); }
+  .day-cell .cell-suggested {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .day-cell .cell-logged {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .day-cell.has-log .cell-logged { color: var(--success); }
+  .day-cell.is-weekend { opacity: 0.7; }
+  .day-cell.is-today {
+    background: var(--brand-light);
+    box-shadow: inset 0 0 0 1.5px var(--brand);
+  }
+
+  th.weekend-th { color: var(--danger); }
+
   /* ===================== 目標卡片 ===================== */
 
   .goal-grid {
@@ -577,70 +664,12 @@
     font-size: 12px;
   }
 
-  /* ===================== 日計畫 ===================== */
-
-  .day-date-hero {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 18px 24px;
-    box-shadow: var(--shadow-card);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .day-date-hero .date-str {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-secondary);
-  }
-  .day-date-hero .total-str {
-    font-family: var(--font-display), sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--brand-dark);
-  }
-
-  .day-list { display: flex; flex-direction: column; gap: 14px; }
-
-  .day-card {
-    background: var(--surface);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    border-left: 5px solid var(--border);
-    transition: box-shadow .2s ease;
-  }
-  .day-card.cat-A { border-left-color: var(--cat-a); }
-  .day-card.cat-B { border-left-color: var(--cat-b); }
-  .day-card.cat-C { border-left-color: var(--cat-c); }
-  .day-card.cat-D { border-left-color: var(--cat-d); }
-  .day-card.done { background: var(--success-bg); }
-  .day-card.just-logged { animation: pop .4s ease; }
+  /* ===================== 每日記錄 Modal 通用元件 ===================== */
 
   @keyframes pop {
     0% { transform: scale(1); }
     30% { transform: scale(1.02); }
     100% { transform: scale(1); }
-  }
-
-  .day-card-main { flex: 1; min-width: 220px; }
-  .day-goal-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
-  .day-goal-sub { font-size: 12.5px; color: var(--text-secondary); }
-  .day-goal-sub .num { font-weight: 700; color: var(--text-primary); }
-
-  .day-card-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
   }
 
   .check-btn {
@@ -814,7 +843,6 @@
     <div class="tabs">
       <button class="tab-btn active" data-page="year">年計畫</button>
       <button class="tab-btn" data-page="week">週計畫</button>
-      <button class="tab-btn" data-page="day">日計畫</button>
     </div>
     <div class="lock-area" id="lockArea">
       <span id="lockIcon">🔒</span>
@@ -839,17 +867,28 @@
       <button class="filter-tab" data-status="done">已完成</button>
       <button class="filter-tab" data-status="abandoned">已放棄</button>
     </div>
+    <div class="year-switcher">
+      <button class="nav-arrow" id="yearPrev">◀</button>
+      <span class="num year-label" id="yearLabel">2026</span>
+      <button class="nav-arrow" id="yearNext">▶</button>
+    </div>
   </div>
 
   <div id="yearGoalGrid" class="goal-grid"></div>
 </div>
 
-<!-- ===================== 週計畫 ===================== -->
+<!-- ===================== 週計畫（含每日填寫功能） ===================== -->
 <div class="page" id="page-week">
-  <div class="page-header">
-    <div>
-      <div class="page-title">本週計畫</div>
-      <div class="page-sub" id="weekRangeLabel">—</div>
+  <div class="week-nav">
+    <div class="week-nav-arrows">
+      <button class="nav-arrow" id="weekPrev">◀ 上一週</button>
+      <div class="week-range-label num" id="weekRangeLabel">—</div>
+      <button class="nav-arrow" id="weekNext">下一週 ▶</button>
+    </div>
+    <div class="week-jump">
+      <select id="jumpYear"></select>
+      <select id="jumpMonth"></select>
+      <button class="btn btn-ghost" id="btnJumpGo">跳到該月第一週</button>
     </div>
   </div>
   <div class="week-table-wrap">
@@ -857,15 +896,20 @@
   </div>
 </div>
 
-<!-- ===================== 日計畫 ===================== -->
-<div class="page" id="page-day">
-  <div class="day-date-hero">
-    <div>
-      <div class="date-str" id="dayDateStr">—</div>
+<!-- ===================== 每日記錄 Modal（從週計畫表格點格子開啟） ===================== -->
+<div class="modal-overlay" id="dayLogModalOverlay">
+  <div class="modal">
+    <h3 id="dayLogTitle">記錄時數</h3>
+    <div class="modal-sub" id="dayLogSub">—</div>
+    <button class="check-btn" id="dayLogCheckBtn" style="width:100%; justify-content:center; margin-bottom:12px;"></button>
+    <div class="manual-input-group" style="width:100%">
+      <input type="number" step="0.25" min="0" placeholder="手動輸入時數" id="dayLogManualInput" style="flex:1">
+      <button id="dayLogManualSubmit">送出</button>
     </div>
-    <div class="total-str" id="dayTotalStr">今日建議投入 0 h</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btnCancelDayLog" style="width:100%">關閉</button>
+    </div>
   </div>
-  <div class="day-list" id="dayList"></div>
 </div>
 
 <!-- ===================== 密碼 Modal ===================== -->
@@ -956,7 +1000,9 @@ const state = {
   activeGoals: [],
   historyGoals: [],
   currentYearFilter: 'active',
-  todayLogs: {}            // 今天的 DailyLog，依 goalID 累計
+  selectedYear: new Date().getFullYear(),
+  selectedWeekStart: null,  // 目前週計畫顯示的那一週的週一（Date物件），init() 時會設定
+  weekLogs: {}              // 目前顯示那一週的 DailyLog，依日期分組
 };
 
 const CAT_COLOR_CLASS = { 'A': 'cat-A', 'B': 'cat-B', 'C': 'cat-C', 'D': 'cat-D' };
@@ -1112,7 +1158,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + page).classList.add('active');
     if (page === 'week') renderWeekPage();
-    if (page === 'day') renderDayPage();
   });
 });
 
@@ -1128,6 +1173,25 @@ document.querySelectorAll('#yearFilterTabs .filter-tab').forEach(btn => {
   });
 });
 
+// 年度切換：只要目標期間有橫跨到選定的那一年，就算在那一年裡
+function goalOverlapsYear(g, year) {
+  const startYear = parseInt((g.startDate || '').slice(0, 4), 10);
+  const deadlineYear = parseInt((g.deadline || '').slice(0, 4), 10);
+  if (isNaN(startYear) || isNaN(deadlineYear)) return true; // 資料異常時不擋
+  return year >= startYear && year <= deadlineYear;
+}
+
+document.getElementById('yearPrev').addEventListener('click', () => {
+  state.selectedYear -= 1;
+  document.getElementById('yearLabel').textContent = state.selectedYear;
+  renderYearGoals();
+});
+document.getElementById('yearNext').addEventListener('click', () => {
+  state.selectedYear += 1;
+  document.getElementById('yearLabel').textContent = state.selectedYear;
+  renderYearGoals();
+});
+
 function renderYearGoals() {
   const grid = document.getElementById('yearGoalGrid');
   let list;
@@ -1135,10 +1199,12 @@ function renderYearGoals() {
   else if (state.currentYearFilter === 'done') list = state.historyGoals.filter(g => g.status === '已完成');
   else list = state.historyGoals.filter(g => g.status === '已放棄');
 
+  list = list.filter(g => goalOverlapsYear(g, state.selectedYear));
+
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
       <div class="big">${THEME.emptyIcon}</div>
-      ${state.currentYearFilter === 'active' ? '還沒有進行中的目標，點右上角新增一個吧' : '這裡還沒有紀錄'}
+      ${state.selectedYear}年沒有符合的目標
     </div>`;
     return;
   }
@@ -1329,22 +1395,12 @@ document.getElementById('btnSubmitAddGoal').addEventListener('click', async () =
 });
 
 /* =========================================================
-   週計畫頁
+   日期工具
    ========================================================= */
-function getCurrentWeekWeekdays() {
-  const now = new Date();
-  const day = now.getDay(); // 0=Sun
-  const mondayOffset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
-  monday.setHours(0,0,0,0);
-  const days = [];
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    days.push(d);
-  }
-  return days;
+function addDays(d, n) {
+  const nd = new Date(d);
+  nd.setDate(nd.getDate() + n);
+  return nd;
 }
 
 function isoDate(d) {
@@ -1354,124 +1410,185 @@ function isoDate(d) {
 
 const WEEKDAY_LABEL = ['日','一','二','三','四','五','六'];
 
+function mondayOf(date) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay(); // 0=Sun
+  const offset = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
+/* =========================================================
+   週計畫頁（含每日打勾／填時數功能）
+   ========================================================= */
+function populateJumpSelects() {
+  const yearSel = document.getElementById('jumpYear');
+  const monthSel = document.getElementById('jumpMonth');
+  const curYear = new Date().getFullYear();
+  let yearOpts = '';
+  for (let y = curYear - 3; y <= curYear + 3; y++) {
+    yearOpts += `<option value="${y}">${y}年</option>`;
+  }
+  yearSel.innerHTML = yearOpts;
+  let monthOpts = '';
+  for (let m = 1; m <= 12; m++) {
+    monthOpts += `<option value="${m}">${m}月</option>`;
+  }
+  monthSel.innerHTML = monthOpts;
+}
+
+document.getElementById('weekPrev').addEventListener('click', () => {
+  state.selectedWeekStart = addDays(state.selectedWeekStart, -7);
+  renderWeekPage();
+});
+document.getElementById('weekNext').addEventListener('click', () => {
+  state.selectedWeekStart = addDays(state.selectedWeekStart, 7);
+  renderWeekPage();
+});
+document.getElementById('btnJumpGo').addEventListener('click', () => {
+  const y = parseInt(document.getElementById('jumpYear').value, 10);
+  const m = parseInt(document.getElementById('jumpMonth').value, 10);
+  state.selectedWeekStart = mondayOf(new Date(y, m - 1, 1));
+  renderWeekPage();
+});
+
 async function renderWeekPage() {
-  const days = getCurrentWeekWeekdays();
+  const monday = state.selectedWeekStart;
+  const days = [];
+  for (let i = 0; i < 7; i++) days.push(addDays(monday, i));
+  const sunday = days[6];
+  const today = todayISO();
+
   document.getElementById('weekRangeLabel').textContent =
-    `${isoDate(days[0])} ~ ${isoDate(days[4])}`;
+    `${isoDate(monday).slice(5)} ~ ${isoDate(sunday).slice(5)}`;
+  document.getElementById('jumpYear').value = monday.getFullYear();
+  document.getElementById('jumpMonth').value = monday.getMonth() + 1;
+
+  try {
+    state.weekLogs = await apiGet('getDailyLog', { startDate: isoDate(monday), endDate: isoDate(sunday) });
+  } catch (e) {
+    showToast('讀取本週紀錄失敗：' + e.message, 'error');
+    state.weekLogs = {};
+  }
 
   const table = document.getElementById('weekTable');
-  if (!state.activeGoals.length) {
-    table.innerHTML = `<tr><td style="padding:40px;text-align:center;color:var(--text-secondary)">目前沒有進行中的目標</td></tr>`;
+
+  // 只顯示跟這一週有重疊的進行中目標
+  const relevantGoals = state.activeGoals.filter(g => {
+    const start = new Date(g.startDate);
+    const deadline = new Date(g.deadline);
+    return start <= sunday && deadline >= monday;
+  });
+
+  if (!relevantGoals.length) {
+    table.innerHTML = `<tr><td style="padding:40px;text-align:center;color:var(--text-secondary)">這一週沒有進行中的目標</td></tr>`;
     return;
   }
 
   let thead = '<tr><th style="text-align:left">目標</th>' +
-    days.map(d => `<th>週${WEEKDAY_LABEL[d.getDay()]}<br><span style="font-weight:400">${isoDate(d).slice(5)}</span></th>`).join('') +
+    days.map(d => {
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      return `<th class="${isWeekend ? 'weekend-th' : ''}">週${WEEKDAY_LABEL[d.getDay()]}<br><span style="font-weight:400">${isoDate(d).slice(5)}</span></th>`;
+    }).join('') +
     '</tr>';
 
-  let rows = state.activeGoals.map(g => {
+  let rows = relevantGoals.map(g => {
     const catGroup = categoryGroup(g.categoryCode);
     const catClass = CAT_COLOR_CLASS[catGroup] || 'cat-A';
-    const dailyVal = g.isOverdue ? '—' : fmtHours(g.suggestedDailyHours) + 'h';
+
+    const cells = days.map(d => {
+      const dateStr = isoDate(d);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      const isToday = dateStr === today;
+      const entries = (state.weekLogs[dateStr] || []).filter(e => e.goalID === g.goalID);
+      const logged = entries.reduce((s, e) => s + e.totalActualHours, 0);
+      const suggestedForCell = (isWeekend || g.isOverdue) ? 0 : g.suggestedDailyHours;
+      const suggestedDisplay = (isWeekend || g.isOverdue) ? '－' : fmtHours(suggestedForCell) + 'h';
+
+      const cellClasses = ['day-cell'];
+      if (isWeekend) cellClasses.push('is-weekend');
+      if (isToday) cellClasses.push('is-today');
+      if (logged > 0) cellClasses.push('has-log');
+
+      return `<td class="${cellClasses.join(' ')}" data-goal="${g.goalID}" data-date="${dateStr}" data-suggested="${suggestedForCell}">
+        ${logged > 0 ? `<div class="cell-logged">${fmtHours(logged)}h</div>` : `<div class="cell-suggested">${suggestedDisplay}</div>`}
+      </td>`;
+    }).join('');
+
     return `<tr class="week-row ${catClass}">
       <td class="goal-label">${g.goalID}　${escapeHtml(g.goalName)}</td>
-      ${days.map(() => `<td class="num-cell">${dailyVal}</td>`).join('')}
+      ${cells}
     </tr>`;
   }).join('');
 
-  const totalPerDay = state.activeGoals.reduce((sum, g) => sum + (g.isOverdue ? 0 : g.suggestedDailyHours), 0);
-  let totalRow = `<tr class="total-row"><td style="text-align:left">每日加總</td>${days.map(() => `<td>${fmtHours(totalPerDay)}h</td>`).join('')}</tr>`;
+  const totalPerDay = relevantGoals.reduce((sum, g) => sum + (g.isOverdue ? 0 : g.suggestedDailyHours), 0);
+  const totalRowCells = days.map(d => {
+    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+    return `<td>${isWeekend ? '－' : fmtHours(totalPerDay) + 'h'}</td>`;
+  }).join('');
+  let totalRow = `<tr class="total-row"><td style="text-align:left">每日加總（平日）</td>${totalRowCells}</tr>`;
 
   table.innerHTML = thead + rows + totalRow;
+  bindWeekCellEvents();
+}
+
+function bindWeekCellEvents() {
+  document.querySelectorAll('.day-cell').forEach(td => {
+    td.addEventListener('click', () => {
+      const goalID = td.dataset.goal;
+      const dateStr = td.dataset.date;
+      const suggested = parseFloat(td.dataset.suggested) || 0;
+      requireUnlock(() => openDayLogModal(goalID, dateStr, suggested));
+    });
+  });
 }
 
 /* =========================================================
-   日計畫頁
+   每日記錄 Modal（週計畫表格點格子開啟）
    ========================================================= */
-async function renderDayPage() {
-  const today = todayISO();
-  const d = new Date();
-  document.getElementById('dayDateStr').textContent =
-    `今天 ${today}（週${WEEKDAY_LABEL[d.getDay()]}）`;
+let currentDayLogTarget = null;
 
-  try {
-    state.todayLogs = await apiGet('getDailyLog', { startDate: today, endDate: today });
-  } catch (e) {
-    showToast('讀取今日紀錄失敗：' + e.message, 'error');
-    state.todayLogs = {};
-  }
+function openDayLogModal(goalID, dateStr, suggested) {
+  const goal = state.activeGoals.find(g => g.goalID === goalID);
+  const goalName = goal ? goal.goalName : goalID;
+  currentDayLogTarget = { goalID, dateStr };
 
-  const todaysEntries = state.todayLogs[today] || [];
-  const logMap = {};
-  todaysEntries.forEach(e => { logMap[e.goalID] = e.totalActualHours; });
-
-  const list = document.getElementById('dayList');
-  const goals = state.activeGoals;
-
-  if (!goals.length) {
-    list.innerHTML = `<div class="empty-state"><div class="big">${THEME.celebrateIcon}</div>目前沒有進行中的目標</div>`;
-    document.getElementById('dayTotalStr').textContent = '今日建議投入 0 h';
-    return;
-  }
-
-  const totalSuggested = goals.reduce((sum, g) => sum + (g.isOverdue ? 0 : g.suggestedDailyHours), 0);
-  document.getElementById('dayTotalStr').textContent = `今日建議投入 ${fmtHours(totalSuggested)} h`;
-
-  list.innerHTML = goals.map(g => {
-    const catGroup = categoryGroup(g.categoryCode);
-    const catClass = CAT_COLOR_CLASS[catGroup] || 'cat-A';
-    const loggedToday = logMap[g.goalID] || 0;
-    const doneClass = loggedToday > 0 ? ' done' : '';
-    return `
-    <div class="day-card ${catClass}${doneClass}" id="day-card-${g.goalID}">
-      <div class="day-card-main">
-        <div class="day-goal-name">${g.goalID}　${escapeHtml(g.goalName)}</div>
-        <div class="day-goal-sub">
-          建議 <span class="num">${g.isOverdue ? '—' : fmtHours(g.suggestedDailyHours) + 'h'}</span>
-          ${loggedToday > 0 ? `　今日已記錄 <span class="num">${fmtHours(loggedToday)}h</span>` : ''}
-        </div>
-      </div>
-      <div class="day-card-actions">
-        <button class="check-btn" data-goal="${g.goalID}">${THEME.checkIcon} 打勾完成</button>
-        <div class="manual-input-group">
-          <input type="number" step="0.25" min="0" placeholder="時數" id="manual-${g.goalID}">
-          <button data-goal="${g.goalID}" class="manual-submit">送出</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-
-  bindDayCardEvents();
+  document.getElementById('dayLogTitle').textContent = `${goalID}　${goalName}`;
+  document.getElementById('dayLogSub').textContent =
+    `${dateStr}　建議時數：${suggested > 0 ? fmtHours(suggested) + 'h' : '－'}`;
+  document.getElementById('dayLogCheckBtn').textContent =
+    `${THEME.checkIcon} 打勾完成（記為 ${fmtHours(suggested)}h）`;
+  document.getElementById('dayLogManualInput').value = '';
+  document.getElementById('dayLogModalOverlay').classList.add('show');
 }
 
-function bindDayCardEvents() {
-  document.querySelectorAll('.check-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const goalID = btn.dataset.goal;
-      requireUnlock(() => logDaily(goalID, 'check', null));
-    });
-  });
-  document.querySelectorAll('.manual-submit').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const goalID = btn.dataset.goal;
-      const input = document.getElementById('manual-' + goalID);
-      const val = parseFloat(input.value);
-      if (!val || val <= 0) { showToast('請輸入大於 0 的時數', 'error'); return; }
-      requireUnlock(() => logDaily(goalID, 'manual', val));
-    });
-  });
+function closeDayLogModal() {
+  document.getElementById('dayLogModalOverlay').classList.remove('show');
+  currentDayLogTarget = null;
 }
 
-async function logDaily(goalID, mode, actualHours) {
+document.getElementById('btnCancelDayLog').addEventListener('click', closeDayLogModal);
+
+document.getElementById('dayLogCheckBtn').addEventListener('click', () => {
+  if (!currentDayLogTarget) return;
+  logHours(currentDayLogTarget.goalID, currentDayLogTarget.dateStr, 'check', null);
+});
+
+document.getElementById('dayLogManualSubmit').addEventListener('click', () => {
+  if (!currentDayLogTarget) return;
+  const val = parseFloat(document.getElementById('dayLogManualInput').value);
+  if (!val || val <= 0) { showToast('請輸入大於 0 的時數', 'error'); return; }
+  logHours(currentDayLogTarget.goalID, currentDayLogTarget.dateStr, 'manual', val);
+});
+
+async function logHours(goalID, dateStr, mode, actualHours) {
   try {
-    const today = todayISO();
-    await apiPost('addDailyLog', { goalID, date: today, mode, actualHours });
+    await apiPost('addDailyLog', { goalID, date: dateStr, mode, actualHours });
     showToast('已記錄', 'success');
-    const card = document.getElementById('day-card-' + goalID);
-    if (card) { card.classList.add('just-logged'); setTimeout(() => card.classList.remove('just-logged'), 450); }
+    closeDayLogModal();
     await loadGoalsData();
-    await renderDayPage();
-    renderYearBanner();
+    await renderWeekPage();
   } catch (e) {
     showToast(e.message, 'error');
   }
@@ -1496,6 +1613,9 @@ function renderYearBanner() {
 }
 
 async function init() {
+  document.getElementById('yearLabel').textContent = state.selectedYear;
+  state.selectedWeekStart = mondayOf(new Date());
+  populateJumpSelects();
   try {
     state.categories = await apiGet('getCategories');
     await loadGoalsData();
